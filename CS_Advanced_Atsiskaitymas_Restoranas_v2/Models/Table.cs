@@ -33,7 +33,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
 
         public override string ToString()
         {
-            throw new NotImplementedException();
+            return $"{base.Id};{TableNumber};{Seats};{OrderId};{Disabled}";
         }
 
         public override string ToMenuString()

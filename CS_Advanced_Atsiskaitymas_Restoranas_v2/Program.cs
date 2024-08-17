@@ -17,8 +17,9 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
             TableService tableService = new TableService(tableRepository);
 
             IRepository<Order> orderRepository = new Repository<Order>(Path.Combine(Directory.GetCurrentDirectory(), "Data", "Orders", "Orders.csv"));
-            IRepository<OrderItem> orderItemsRepository = new Repository<OrderItem>(Path.Combine(Directory.GetCurrentDirectory(), "Data", "Orders"));   //Path to Order directory, not file itself
-            OrderService orderService = new OrderService(orderRepository, orderItemsRepository);
+            IRepository<OrderItem> foodItemsRepository = new OrderItemsRepository<OrderItem>(Path.Combine(Directory.GetCurrentDirectory(), "Data", "OrderItems", "FoodItems.csv"));
+            IRepository<OrderItem> beverageItemsRepository = new Repository<OrderItem>(Path.Combine(Directory.GetCurrentDirectory(), "Data", "OrderItems", "Beverages.csv"));
+            OrderService orderService = new OrderService(orderRepository, foodItemsRepository, beverageItemsRepository);
 
             RestaurantManager restaurantManager = new RestaurantManager(displayService, userService, tableService, orderService);
                         

@@ -25,6 +25,9 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
         { 
             return _repository.GetById(id);
         }
-
+        public void Update(Table table) 
+        { 
+            _repository.Update(table);
+        }
     }
 }

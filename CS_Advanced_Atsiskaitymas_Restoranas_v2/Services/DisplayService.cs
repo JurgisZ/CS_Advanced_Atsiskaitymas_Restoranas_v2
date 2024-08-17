@@ -131,6 +131,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
         public bool DisplayConfirmSelectedTable(Table selectedTable)
         {
             DisplayReset();
+            if(selectedTable == null) return false;
             Console.WriteLine($"You have selected table number {selectedTable.TableNumber} with {selectedTable.Seats} available seats.");
             Console.Write("Do you want to continue? y/n: ");
             if (Console.ReadLine() == "y")

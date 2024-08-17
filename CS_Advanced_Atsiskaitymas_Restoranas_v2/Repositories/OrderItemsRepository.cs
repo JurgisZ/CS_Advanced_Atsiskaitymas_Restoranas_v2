@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
 {
-    internal class OrderItemsRepository : Repository<OrderItem>, IRepository<OrderItem>
+    internal class OrderItemsRepository<T> : Repository<T>, IRepository<T> where T: OrderItem
     {
         public OrderItemsRepository(string filePath) : base(filePath) { } //not file path but directory
-        public override void Create(OrderItem entity)
+        public override void Create(T entity)
         {
             //irasom i orderId.csv faila
             base.Create(entity);

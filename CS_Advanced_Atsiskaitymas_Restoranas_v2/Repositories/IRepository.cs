@@ -7,6 +7,6 @@
         public List<T> GetAll();
         public T GetById(int id);
         public int GetLastId();
-        bool Update(T entity);
+        void Update(T entity);
     }
 }
