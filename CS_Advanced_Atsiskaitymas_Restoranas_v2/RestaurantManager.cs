@@ -34,8 +34,6 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
                 if (currentUser == default)
                 {
                     _displayService.DisplayHelloMessage();
-
-                    
                     currentUser = Authenticate();
                 }
 
@@ -49,20 +47,16 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
                         int selectedTableId = _displayService.DisplayStartNewOrderGetTableId(_tableService.GetAvailableTables(), $"Hello {currentUser.Name}");
                         if(_displayService.DisplayConfirmSelectedTable(_tableService.GetById(selectedTableId)))
                         {
-                            //Create new order, assign order to table
-                            Console.WriteLine("Creating new order...");
+                            //Create new order
                             int orderId = _orderService.Create(selectedTableId);
+
+                            //Assign order to table
                             Table table = _tableService.GetById(selectedTableId);
                             table.OrderId = orderId;
                             _tableService.Update(table);
-
-                            Console.WriteLine("Table has assigned order id now");
-                            Console.ReadKey();
                         }
-                        else
                         break;
 
-                        break;
                     case 2:
                         Console.WriteLine("Add to order:");
                         //Select category: FoodItem, BeverageItem

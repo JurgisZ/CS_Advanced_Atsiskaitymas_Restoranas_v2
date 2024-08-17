@@ -3,7 +3,7 @@
     internal interface IRepository<T>
     {
         void Create(T entity);
-        bool Delete(T entity);
+        void Delete(T entity);
         public List<T> GetAll();
         public T GetById(int id);
         public int GetLastId();

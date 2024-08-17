@@ -9,6 +9,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
     internal abstract class OrderItem : EntityBase
     {
         public string ItemType { get; set; }
+        public string ItemName { get; set; }
         public decimal Price { get; set; }
         public int Count { get; set; }
         public OrderItem(string csvLine)
@@ -16,9 +17,11 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
             try
             {
                 string[] csvValues = csvLine.Split(';');
+
                 base.Id = Convert.ToInt32(csvValues[0]);
                 ItemType = csvValues[1];
-                Price = Convert.ToDecimal(csvValues[2]);
+                ItemName = csvValues[2];
+                Price = Convert.ToDecimal(csvValues[3]);
             }
             catch(Exception ex)
             {
@@ -29,7 +32,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
 
         public override string ToMenuString()
         {
-            throw new NotImplementedException();
+            return $"{ItemName} {Price.ToString("0,00")} Eur";
         }
 
         public override string ToString()
