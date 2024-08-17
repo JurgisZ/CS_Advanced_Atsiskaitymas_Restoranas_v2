@@ -1,5 +1,4 @@
-﻿
-namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
+﻿namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
 {
     internal interface IRepository<T>
     {
@@ -7,7 +6,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
         bool Delete(T entity);
         public List<T> GetAll();
         public T GetById(int id);
-        public int GetLastId(int id);
+        public int GetLastId();
         bool Update(T entity);
     }
 }

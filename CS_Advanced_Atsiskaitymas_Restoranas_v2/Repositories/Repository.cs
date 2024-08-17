@@ -20,13 +20,13 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
         {
 
         }
-        public List<T> GetAll()
+        public List<T>? GetAll()
         {
-            List<T> entities = default;
+            List<T> entities = new List<T>();
             ConstructorInfo constructor = typeof(T).GetConstructor(new Type[] { typeof(string) });
-            if(constructor == null)
+            if (constructor == null)
                 //log error
-                return entities;
+                return default;
                        
             try
             {
@@ -35,7 +35,10 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
                     string csvLine;
                     while(null != (csvLine = reader.ReadLine()))
                     {
-                        entities.Add((T)constructor.Invoke(new object[] { csvLine }));
+                        Console.WriteLine($"CSV {csvLine}");
+                        var entity = (T)constructor?.Invoke(new object[] { csvLine });
+                        if(entity != null) 
+                            entities.Add(entity);
                     }
                 }
             }
@@ -43,15 +46,20 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
             {
                 Console.WriteLine(ex.Message);
             }
-            return entities;
+            return entities == null ? default : entities;
         }
-        public T GetById(int id)
+        public T? GetById(int id)
         {
-            return default;
+            T entity = GetAll().Find(x => x.Id == id);
+            return entity;
         }
 
-        public int GetLastId(int id)
+        public int GetLastId()
         {
+            List<T> entityList = GetAll()?.OrderByDescending(x => x.Id).ToList();
+            if (entityList.Count > 0)
+                return entityList[0].Id;
+
             return default;
         }
         public bool Update(T entity)

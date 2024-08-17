@@ -21,10 +21,18 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
             try
             {
                 string[] csvValues = csvLine.Split(';');
+                base.Id = Convert.ToInt32(csvValues[0]);
+                UserLogInName = csvValues[1];
+                UserLogInPassCode = csvValues[2];
+                Name = csvValues[3];
+
+
+
             }
             catch(Exception ex) 
             {
-                
+                Console.WriteLine("Failed to initialize user object.");
+                Console.WriteLine(ex.Message);
             }
 
         }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CS_Advanced_Atsiskaitymas_Restoranas_v2.Services.Interfaces;
+//using CS_Advanced_Atsiskaitymas_Restoranas_v2.Services.Interfaces;
 
 namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
 {
@@ -14,7 +14,6 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
         private readonly DisplayService _displayService;//_IDisplayService;
         private readonly UserService _userService;
 
-        private readonly ILogger _logger;
 
         public RestaurantManager(DisplayService displayService, UserService userService) 
         { 
@@ -25,11 +24,25 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
         public void Start()
         {
             bool exit = false;
-            while (!exit)
+            while (!_displayService.DisplayConfirmExit(exit))
             {
                 _displayService.DisplayHelloMessage();
+
                 //Log in
                 User currentUser = Authenticate();
+
+                //Main menu select
+                int mainMenuSelection = _displayService.DisplayMainMenuSelection(ref exit, $"Hello {currentUser.Name}.");
+                if (exit == true) continue;
+
+                switch(mainMenuSelection ) 
+                {
+                    case 1:
+                        _displayService.DisplayStartNewOrder(ref exit, $"Hello {currentUser.Name}");
+                        if (exit == true) continue;
+                        Console.ReadKey();
+                        break;
+                }
 
             }
 
@@ -37,7 +50,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
         public User Authenticate()
         {
             bool failedAttemptMsg = false;
-            User user = default;
+            User? user = default;
 
             while (user == default)
             {

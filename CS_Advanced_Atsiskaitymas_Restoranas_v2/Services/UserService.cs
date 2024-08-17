@@ -19,7 +19,8 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
         public User? ValidateUser(string userLogInName, string userLogInPassCode)
         {
             var users = _userRepository.GetAll();
-            var user = users?.Find(x => x.UserLogInName == userLogInName && x.UserLogInPassCode == userLogInPassCode);
+            var user = users.Find(x => (x.UserLogInName == userLogInName) && (x.UserLogInPassCode == userLogInPassCode));
+            
             return user;
         }
 
