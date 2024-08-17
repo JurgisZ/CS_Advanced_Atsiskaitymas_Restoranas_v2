@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
 {
-    internal class Repository<T> : IRepository<T> where T : EntityBase//, new()
+    internal class Repository<T> : IRepository<T> where T : EntityBase//, new() - no new, we need to find Next Id for entity
     {
         protected readonly string _filePath;
 
@@ -16,11 +16,22 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
         {
             _filePath = filePath;
         }
-        public void Create(T entity)
+        public virtual void Create(T entity)
         {
-
+            try
+            {
+                using(var writer = new StreamWriter(_filePath, append:true)) 
+                { 
+                    writer.WriteLine(entity.ToString());
+                }
+            }
+            catch(Exception ex) 
+            {
+                Console.WriteLine("Failed to write entity to file.");
+                Console.WriteLine(ex.Message);
+            }
         }
-        public List<T>? GetAll()
+        public virtual List<T>? GetAll()
         {
             List<T> entities = new List<T>();
             ConstructorInfo constructor = typeof(T).GetConstructor(new Type[] { typeof(string) });
@@ -48,25 +59,25 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
             }
             return entities == null ? default : entities;
         }
-        public T? GetById(int id)
+        public virtual T? GetById(int id)
         {
             T entity = GetAll().Find(x => x.Id == id);
             return entity;
         }
 
-        public int GetLastId()
+        public virtual int GetLastId()
         {
             List<T> entityList = GetAll()?.OrderByDescending(x => x.Id).ToList();
             if (entityList.Count > 0)
                 return entityList[0].Id;
 
-            return default;
+            return 0;   //use base.Id = GetLastId() + 1 when creating new entity.
         }
-        public bool Update(T entity)
+        public virtual bool Update(T entity)
         {
             return default;
         }
-        public bool Delete(T entity)
+        public virtual bool Delete(T entity)
         {
             return default;
         }

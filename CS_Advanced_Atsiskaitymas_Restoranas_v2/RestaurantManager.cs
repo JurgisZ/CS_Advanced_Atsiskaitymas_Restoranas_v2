@@ -13,35 +13,54 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
     {
         private readonly DisplayService _displayService;//_IDisplayService;
         private readonly UserService _userService;
+        private readonly TableService _tableService;
+        private readonly OrderService _orderService;
+        public User? currentUser { get; private set; } = default;
 
-
-        public RestaurantManager(DisplayService displayService, UserService userService) 
-        { 
+        public RestaurantManager(DisplayService displayService, UserService userService, TableService tableService, OrderService orderService)
+        {
             _displayService = displayService;
             _userService = userService;
-            
+            _tableService = tableService;
+            _orderService = orderService;
+
         }
         public void Start()
         {
             bool exit = false;
-            while (!_displayService.DisplayConfirmExit(exit))
+            while (!exit)
             {
-                _displayService.DisplayHelloMessage();
-
                 //Log in
-                User currentUser = Authenticate();
+                if (currentUser == default)
+                {
+                    _displayService.DisplayHelloMessage();
+
+                    
+                    currentUser = Authenticate();
+                }
 
                 //Main menu select
                 int mainMenuSelection = _displayService.DisplayMainMenuSelection(ref exit, $"Hello {currentUser.Name}.");
-                if (exit == true) continue;
+                if (exit) continue;
 
-                switch(mainMenuSelection ) 
+                switch (mainMenuSelection)
                 {
-                    case 1:
-                        _displayService.DisplayStartNewOrder(ref exit, $"Hello {currentUser.Name}");
-                        if (exit == true) continue;
-                        Console.ReadKey();
+                    case 1: //list available tables, select
+                        int selectedTableId = _displayService.DisplayStartNewOrderGetTableId(_tableService.GetAvailableTables(), $"Hello {currentUser.Name}");
+                        if(_displayService.DisplayConfirmSelectedTable(_tableService.GetById(selectedTableId)))
+                        {
+                            //Select category: FoodItem, BeverageItem
+                            //Create new order, assign order to table
+                            Console.WriteLine("Creating new order...");
+                            Console.ReadKey();
+
+
+                        }
+                        else
                         break;
+
+                        break;
+
                 }
 
             }

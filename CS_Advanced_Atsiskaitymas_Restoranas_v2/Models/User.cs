@@ -13,7 +13,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
         public string Name { get; set; }
         public string UserLogInName { get; set; }
         public string UserLogInPassCode { get; set; }
-
+        public List<int> UserOrderIds { get; private set; } = new List<int>();  //ar tikrai naudosim?
 
         public User(string csvLine)
         {
@@ -25,16 +25,24 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
                 UserLogInName = csvValues[1];
                 UserLogInPassCode = csvValues[2];
                 Name = csvValues[3];
-
-
-
+                //user orders for ciklas i = 3; i < csvLine.Count; i ++; Add to UserOrders Order.Id
             }
             catch(Exception ex) 
             {
-                Console.WriteLine("Failed to initialize user object.");
+                Console.WriteLine("Failed to initialize User object.");
                 Console.WriteLine(ex.Message);
             }
 
+        }
+
+        public override string ToString()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string ToMenuString()
+        {
+            throw new NotImplementedException();
         }
     }
 }
