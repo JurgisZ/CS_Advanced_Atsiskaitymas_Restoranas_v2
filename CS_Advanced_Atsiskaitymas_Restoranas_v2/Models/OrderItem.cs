@@ -12,7 +12,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
         public string ItemType { get; set; }
         public string ItemName { get; set; }
         public decimal Price { get; set; }
-        public int Amount { get; set; } //butu nice apsirasyt savo += operatoriu
+        public int Amount { get; set; }
         public OrderItem(string csvLine)    //abstract
         {
             try
@@ -23,6 +23,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
                 ItemType = csvValues[1];
                 ItemName = csvValues[2];
                 Price = Convert.ToDecimal(csvValues[3],CultureInfo.InvariantCulture);
+                Amount = Convert.ToInt32(csvValues[4]) >= 0 ? Convert.ToInt32(csvValues[4]) : 0;
             }
             catch(Exception ex)
             {
@@ -30,15 +31,14 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
                 Console.WriteLine(ex.Message);
             }
         }
-
         public override string ToMenuString()
         {
-            return $"{ItemName} {Price.ToString("0,00")} Eur";
+            return $"{ItemName} {Price.ToString(CultureInfo.InvariantCulture)} Eur";
         }
 
         public override string ToString()
         {
-            throw new NotImplementedException();
+            return $"{base.Id};{ItemType};{ItemName};{Price.ToString(CultureInfo.InvariantCulture)};{Amount}";
         }
     }
 }

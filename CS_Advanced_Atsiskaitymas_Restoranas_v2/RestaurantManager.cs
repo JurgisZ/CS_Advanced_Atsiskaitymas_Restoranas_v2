@@ -46,16 +46,15 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
                 {
                     case 1: //list available tables, select
                         int selectedTableIdandNumber = _displayService.DisplayStartNewOrderGetTableId(_tableService.GetAvailableTables(), $"Hello {currentUser.Name}");
-                        if(_displayService.DisplayConfirmSelectedTable(_tableService.GetById(selectedTableIdandNumber)))
-                        {
-                            //Create new order
+                        if (!_displayService.DisplayConfirmSelectedTable(_tableService.GetById(selectedTableIdandNumber))) break;
+                            //Create new order by table number, pass table seats to order
                             int orderId = _orderService.Create(selectedTableIdandNumber, _tableService.GetById(selectedTableIdandNumber).Id);
-
+                            
                             //Assign order to table
                             Table table = _tableService.GetById(selectedTableIdandNumber);
                             table.OrderId = orderId;
                             _tableService.Update(table);
-                        }
+                        
                         break;
 
                     case 2:
@@ -66,25 +65,58 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
                         if (selectedOrderIndex == -1) break;
                         int selectedOrderId = activeOrders[selectedOrderIndex].Id;
                         
-                        
                         //Select category: FoodItem, BeverageItem
                         string[] orderItemcategories = new string[] { "FoodItem", "BeverageItem" };
-                        int itemCategoryNumId = _displayService.DisplaySelectOptionReturnIndex(orderItemcategories);
-                        //allow 6 - exit at this point
-
-                        
+                        int itemCategoryIndex = _displayService.DisplaySelectOptionReturnIndex(orderItemcategories);
+                        string continueAddOrderItemsMsg = "Continue with Order selection?";
+                        if (!_displayService.DisplayConfirmContinue(continueAddOrderItemsMsg)) break;
 
                         //display item selection
-                        List<OrderItem> itemsByCategory = _orderService.GetMenuItemsByCategory(orderItemcategories[itemCategoryNumId]);
-                            //if (itemsByCategory == default) - some message, break
+                        List<OrderItem> itemsByCategory = _orderService.GetMenuItemsByCategory(orderItemcategories[itemCategoryIndex]);
+                        //if (itemsByCategory == default) - some message, break
+                        
                         string[] orderItemsForSelection = _orderService.OrderItemsListToMenuStringArr(itemsByCategory);
-                        int selectedItemId = _displayService.DisplaySelectOptionReturnIndex(orderItemsForSelection);
-                        Console.WriteLine($"Selected item id: {selectedItemId}");
+                        int selectedItemIndex = _displayService.DisplaySelectOptionReturnIndex(orderItemsForSelection);
+
+                        //Display item and choose amount
+                        if (itemsByCategory.Count > 0)
+                        {
+                            int amountToAdd = _displayService.DisplayAddItemToOrderSelectAmount(itemsByCategory[selectedItemIndex]);
+                            _orderService.AddItemToOrder(selectedOrderId, itemsByCategory[selectedItemIndex], amountToAdd);
+                        }
+
+                        //Display all order items
+                        _displayService.DisplayOrderContents
+                            (_orderService.OrderItemsToMenuStringArrSubTotal(selectedOrderId), _orderService.OrderItemsTotalPrice(selectedOrderId));
+
 
                         Console.ReadKey();
                         break;
-                    case 4: //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        _tableService.ClearAllTableOrders();
+                    case 3:
+                        //Display active orders
+                        List<Order> activeOrdersForViewing = _orderService.GetActiveOrders();
+                        string[] activeOrdersStrArr = _orderService.OrdersListToMenuStringArr(activeOrdersForViewing);
+                        int selectedOrderForViewingIndex = _displayService.DisplaySelectOptionReturnIndex(activeOrdersStrArr);
+                        if (selectedOrderForViewingIndex == -1) break;
+                        Order selectedOrderForViewing = activeOrdersForViewing[selectedOrderForViewingIndex];
+
+                        //Display order items
+                        if (selectedOrderForViewingIndex == -1) break;
+                        string[] activeOrderItemsForViewing = _orderService.OrderItemsToMenuStringArrSubTotal(selectedOrderForViewing.Id);
+                        
+                        _displayService.DisplayOrderContents(activeOrderItemsForViewing, 
+                                _orderService.OrderItemsTotalPrice(selectedOrderForViewing.Id));
+
+                        if (_displayService.DisplayConfirmContinue($"Completing order {selectedOrderForViewing.ToMenuString()}{Environment.NewLine}", false))
+                        {
+                            _orderService.CompleteOrder(selectedOrderForViewing.Id);
+                            _tableService.CompleteOrder(selectedOrderForViewing.TableNumber);
+                        }
+                        //propmt print user reciept?
+                        _displayService.DisplayConfirmContinue("Do you want to print user reciept?");
+                        //send email
+                        
+                        Console.ReadKey();
                         break;
                 }
 

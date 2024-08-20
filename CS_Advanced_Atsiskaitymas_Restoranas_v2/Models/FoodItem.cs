@@ -14,11 +14,11 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
         }
         public override string ToString() 
         { 
-            throw new NotImplementedException();
+            return base.ToString();
         }
         public override string ToMenuString()
         {
-            throw new NotImplementedException();
+            return base.ToMenuString();
         }
     }
 }

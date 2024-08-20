@@ -6,16 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
+using CS_Advanced_Atsiskaitymas_Restoranas_v2.Services.Interfaces;
 
 namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
 {
-    internal class OrderService
+    internal class OrderService : IOrderService
     {
         private readonly IRepository<Order> _repository;
         private readonly IRepository<FoodItem> _foodItemRepository;
         private readonly IRepository<BeverageItem> _beverageItemRepository;
-        private readonly OrderItemsRepository<OrderItem> _orderItemsRepository;   //tikriausiai negaliu IRepository naudot
-        public OrderService(IRepository<Order> repository, IRepository<FoodItem> foodItemRepository, IRepository<BeverageItem> beverageItemRepository, OrderItemsRepository<OrderItem> orderItemsRepository)
+        private readonly OrderItemsRepository _orderItemsRepository;   //tikriausiai negaliu IRepository naudot
+        public OrderService(IRepository<Order> repository, IRepository<FoodItem> foodItemRepository, IRepository<BeverageItem> beverageItemRepository, OrderItemsRepository orderItemsRepository)
         {
             _repository = repository;
             _foodItemRepository = foodItemRepository;
@@ -26,30 +27,39 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
         {
             //create new order using csvLine ctor
             //{base.Id};{TableNumber};{TableSeatsNum};{IsCompleted};{OrderTime.ToString(CultureInfo.InvariantCulture)}"
-            string args = $"{_repository.GetLastId() + 1};{tableNumber};{tableSeatsNum}{false};{DateTime.Now.ToString(CultureInfo.InvariantCulture)}";
-            var sb = new StringBuilder();
-            sb.Append(args);
+            string csvLine = $"{_repository.GetLastId() + 1};{tableNumber};{tableSeatsNum};{false};{DateTime.Now.ToString(CultureInfo.InvariantCulture)}";
 
-            //add items
-            //foreach(var item in order.Items) 
-            //{ 
-            //    sb.Append(item.ToString());
-            //}
-
-            Order newOrder = new Order(sb.ToString());
+            Order newOrder = new Order(csvLine);
             _repository.Create(newOrder);
-
+            _orderItemsRepository.CreateOrderItemsFile(newOrder);
             return newOrder == default ? -1 : newOrder.Id;
 
             //create empty orderId.items file
         }
         public List<Order> GetAll()
         {
-            return _repository.GetAll();
+            var orders = _repository.GetAll();
+            List<Order> ordersWithItems = new List<Order>();
+            //load items
+            foreach (Order order in orders)
+            {
+                var tmpOrder = order;
+                var items = _orderItemsRepository.GetAll(order.Id);
+                ordersWithItems.Add(tmpOrder);
+                if (items == null) continue;
+                foreach (var item in items)
+                {
+                    tmpOrder.Items.Add(item);
+                }
+            }
+            return ordersWithItems;
         }
-        public Order GetById(int id)
+        public Order? GetById(int id)
         {
-            throw new NotImplementedException();
+            Order order = GetAll().Find(x => x.Id == id);
+            if (order == null) return null;
+
+            return order;
         }
         public List<Order> GetActiveOrders()
         {
@@ -66,7 +76,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
                 case "FoodItem":
                     List<FoodItem> itemsAsFood = _foodItemRepository.GetAll();
                     List<OrderItem> itemsFoodAsOrderItems = new List<OrderItem>();
-                    foreach(FoodItem item in itemsAsFood)
+                    foreach (FoodItem item in itemsAsFood) //.ToList()
                     {
                         itemsFoodAsOrderItems.Add(item);
                     }
@@ -77,7 +87,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
                     List<OrderItem> itemsBeverageAsOrderItem = new List<OrderItem>();
                     foreach (BeverageItem item in itemsAsBeverageItems)
                     {
-                        itemsAsBeverageItems.Add(item);
+                        itemsBeverageAsOrderItem.Add(item);
                     }
                     return itemsBeverageAsOrderItem;
             }
@@ -92,8 +102,8 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
             }
             return ordersStrArr;
         }
-        public void Update(Order order) 
-        { 
+        public void Update(Order order)
+        {
             _repository.Update(order);
         }
         public string[] OrderItemsListToMenuStringArr(List<OrderItem> orderItems)
@@ -101,10 +111,47 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
             string[] orderItemsStrArr = new string[orderItems.Count];
             for (int i = 0; i < orderItems.Count; i++)
             {
-                orderItemsStrArr[i] = orderItems[i].ToMenuString();
+                orderItemsStrArr[i] = $"{orderItems[i].ToMenuString()}";
             }
             return orderItemsStrArr;
         }
-        
+        public void AddItemToOrder(int orderId, OrderItem item, int amount)
+        {
+            if (amount <= 0) return;
+            item.Amount = amount;
+            _orderItemsRepository.Update(orderId, item);
+        }
+        public string[]? OrderItemsToMenuStringArrSubTotal(int orderId)
+        {
+            Order order = GetById(orderId);
+            if (order.Items.Count == 0)
+                return null;
+
+            string[] strings = new string[order.Items.Count];
+
+            for (int i = 0; i < order.Items.Count; i++)
+            {
+                strings[i] = $"{order.Items[i].ToMenuString()} Amount: {order.Items[i].Amount}{Environment.NewLine}Subtotal: {order.Items[i].Price * order.Items[i].Amount} Eur{Environment.NewLine}";
+
+            }
+            return strings;
+        }
+        public decimal OrderItemsTotalPrice(int orderId)
+        {
+            Order order = GetById(orderId);
+            if (order.Items.Count == 0) return 0.00m;
+            decimal totalAmount = 0.0m;
+            foreach (OrderItem item in order.Items)
+            {
+                totalAmount += item.Amount * item.Price;
+            }
+            return totalAmount;
+        }
+        public void CompleteOrder(int orderId)
+        {
+            _repository.Delete(GetById(orderId));
+            _orderItemsRepository.Delete(orderId);
+        }
+
     }
 }

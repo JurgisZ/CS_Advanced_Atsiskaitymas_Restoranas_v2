@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CS_Advanced_Atsiskaitymas_Restoranas_v2.Services.Interfaces;
 
 namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
 {
-    internal class TableService
+    internal class TableService : ITableService
     {
         private readonly IRepository<Table> _repository;
         public TableService(IRepository<Table> repository)
@@ -21,23 +22,20 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
             tables = tables.OrderBy(x => x.Id).ToList();
             return tables;
         }
-        public Table? GetById(int id) 
-        { 
+        public Table? GetById(int id)
+        {
             return _repository.GetById(id);
         }
-        public void Update(Table table) 
-        { 
+        public void Update(Table table)
+        {
             _repository.Update(table);
         }
-        //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        public void ClearAllTableOrders()
+        public void CompleteOrder(int tableId)
         {
-            var tables = _repository.GetAll();
-            foreach (var table in tables)
-            {
-                table.OrderId = null;
-                _repository.Update(table);
-            }
+            Table table = (Table)_repository.GetById(tableId);
+            if (table == null) return;
+            table.OrderId = null;
+            _repository.Update(table);
 
         }
     }

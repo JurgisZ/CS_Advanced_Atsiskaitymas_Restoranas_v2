@@ -8,17 +8,25 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
 {
     internal class BeverageItem : OrderItem
     {
-        public bool IsAlcoholiBeverage { get; set; }
+        public bool IsAlcoholicBeverage { get; set; }
         public BeverageItem(string csvLine) : base(csvLine)
         {
+            if(Boolean.TryParse(csvLine.Split(";")[5], out bool isAlcoholic))
+            {
+                IsAlcoholicBeverage = isAlcoholic;
+            }
+            else
+            {
+                IsAlcoholicBeverage = false;
+            }
         }
         public override string ToString()
         {
-            throw new NotImplementedException();
+            return $"{base.ToString()};{IsAlcoholicBeverage}";
         }
         public override string ToMenuString()
         {
-            throw new NotImplementedException();
+            return base.ToMenuString();
         }
     }
 }

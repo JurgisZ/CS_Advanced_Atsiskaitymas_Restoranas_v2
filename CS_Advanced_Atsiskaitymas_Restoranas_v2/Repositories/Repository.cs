@@ -47,8 +47,6 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
                     string csvLine;
                     while(null != (csvLine = reader.ReadLine()))
                     {
-                        //TEST. REMOVE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        Console.WriteLine($"CSV {csvLine}");
                         var entity = (T)constructor.Invoke(new object[] { csvLine });
                         if(entity != null) 
                             entities.Add(entity);
@@ -127,6 +125,22 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
                         T existingEntity = (T)constructor.Invoke(new object[] { (string)csvLine });
                         if (!(entity.Id == existingEntity.Id))
                             entities.Add(existingEntity);
+
+                        else if(typeof(T) == typeof(Order)) //exception for Orders, we want to keep them and mark as Completed
+                        {
+                            string[] csvLineArr = csvLine.Split(";");
+                            csvLineArr[3] = $"{true}";
+                            var sb = new StringBuilder();
+                            for(int i = 0; i <csvLineArr.Length; i++)
+                            {
+                                if(i == csvLineArr.Length - 1)
+                                    sb.Append(csvLineArr[i]);
+                                else
+                                    sb.Append(csvLineArr[i] + ";");
+                            }
+                            string newCsvLine = sb.ToString();
+                            entities.Add((T)constructor.Invoke(new object[] { (string)newCsvLine }));
+                        }
                     }
                 }
                 File.Create(_filePath).Close();

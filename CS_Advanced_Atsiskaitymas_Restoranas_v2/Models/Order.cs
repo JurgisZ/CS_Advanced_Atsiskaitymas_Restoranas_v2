@@ -13,8 +13,8 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
         public int TableNumber {  get; set; }
         public int TableSeatsNum {  get; set; }
         public bool IsCompleted { get; set; }
-        public List<OrderItem> Items { get; private set; } = new List<OrderItem>();
         public DateTime OrderTime { get; set; }
+        public List<OrderItem> Items { get; private set; } = new List<OrderItem>();
         public Order(string csvLine)
         {
             try
@@ -45,6 +45,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
         {
             return $"Table number: {TableNumber}, Seats: {TableSeatsNum}, ";
         }
+        
     }
     
 }

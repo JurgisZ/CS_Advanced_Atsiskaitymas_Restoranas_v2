@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 
 namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
 {
-    internal class OrderItemsRepository<OrderItem>
+    internal class OrderItemsRepository
     {
         private readonly string _orderItemsdirectoryPath;
-        //galvoju kad:
-        public OrderItemsRepository(string _orderItemsdirectoryPath)
+        public OrderItemsRepository(string orderItemsdirectoryPath)
         {
-            _orderItemsdirectoryPath = _orderItemsdirectoryPath;
+            _orderItemsdirectoryPath = orderItemsdirectoryPath;
         }
         private int GetOrderId(Order order)
         {
@@ -39,9 +38,10 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
         }
         public void CreateOrderItemsFile(Order order)
         {
-            string fullPath = GetFilePathByOrderId(GetOrderId(order));
+            string fullPath = GetFilePathByOrderId(order.Id);
             try
             {
+                //ar turim overwritint ar ne?
                 if (!File.Exists(Path.Combine(fullPath)))
                     File.Create(fullPath).Close();
 
@@ -59,41 +59,33 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
                 Console.WriteLine(ex.Message);
             }
         }
-        public void Delete(OrderItem entity)
-        {
-            throw new NotImplementedException();
-        }
 
         public List<OrderItem>? GetAll(int orderId)
         {
             string fullPath = GetFilePathByOrderId(orderId);
             List<OrderItem> items = new List<OrderItem>();
 
-            ConstructorInfo ctorFoodItem = typeof(FoodItem).GetConstructor(new Type[] { typeof(string) });
-            ConstructorInfo ctorBeverageItem = typeof(BeverageItem).GetConstructor(new Type[] { typeof(string) });
             try
             {
                 if (!File.Exists(fullPath)) return null;
                 string? csvLine = null;
                 using (var reader = new StreamReader(fullPath))
                 {
-                    while (null != reader.ReadLine())
+                    while (null != (csvLine = reader.ReadLine()))
                     {
-                        //if (csvLine.Split(";")[1] == )
                         switch (csvLine.Split(";")[1]) //1 - Type: string FoodItem, BeverageItem
                         {
                             case "FoodItem":
-                                if (ctorFoodItem != null)
-                                    items.Add((OrderItem)ctorFoodItem.Invoke(new object[] { csvLine }));
+                                items.Add(new FoodItem(csvLine));
                                 break;
                             case "BeverageItem":
-                                if (ctorBeverageItem != null)
-                                    items.Add((OrderItem)ctorBeverageItem.Invoke(new object[] { csvLine }));
+                                items.Add(new BeverageItem(csvLine));
                                 break;
                         }
                     }
                 }
             }
+
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
@@ -101,35 +93,14 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
             return items;
 
         }
-        private int GetOrderItemProp(OrderItem orderItem, string prop)
-        {
-            int orderItemPropValue = 0;
-            try
-            {
-                var propertyInfoOrderItemId = typeof(OrderItem).GetProperty(prop);
-                object orderItemIdValue = propertyInfoOrderItemId.GetValue(orderItem, null);
-                orderItemPropValue = (int)orderItemIdValue;
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            return orderItemPropValue;
-        }
         public OrderItem? GetByOrderIdAndItemId(int orderId, int itemId)
         {
             var items = GetAll(orderId);
-
-            //var propertyInfoOrderItemId = typeof(OrderItem).GetProperty("Id");
-
             foreach (OrderItem item in items)
             {
-                //object orderItemIdValue = propertyInfoOrderItemId.GetValue(item, null);
-                //var orderItemPropId = (int)orderItemIdValue;
-                var orderItemPropId = GetOrderItemProp(item, "Id");
-                if (itemId == orderItemPropId)
+                if (itemId == item.Id)
                 {
-                    return (OrderItem)item;
+                    return item;
                 }
             }
             return default;
@@ -138,31 +109,18 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
         public int GetLastId(int orderId)
         {
             var items = GetAll(orderId);
-
-            var propertyInfoOrderItemId = typeof(OrderItem).GetProperty("Id");
-
             int newMax = -1;
             foreach (OrderItem item in items)
             {
-
-                object orderItemIdValue = propertyInfoOrderItemId.GetValue(item, null);
-                var orderItemPropId = (int)orderItemIdValue;
-                newMax = orderItemPropId <= newMax ? newMax : orderItemPropId;  // < ?             
+                newMax = item.Id <= newMax ? newMax : item.Id;  // < ?             
             }
             return newMax;
         }
 
         public void Update(int orderId, OrderItem orderItem)
         {
-            string fullPath = GetFilePathByOrderId(orderId);
             if (orderItem == null) return;
-            //csvLine ctor
-            ConstructorInfo constructor = typeof(OrderItem).GetConstructor(new Type[] { typeof(string) });
-
-            var propertyInfoOrderItemAmount = typeof(OrderItem).GetProperty("Amount");
-            object orderItemIdValue = propertyInfoOrderItemAmount.GetValue(orderItem, null);
-            var orderItemPropAmount1 = (int)orderItemIdValue;
-
+            string fullPath = GetFilePathByOrderId(orderId);
             List<OrderItem> items = new List<OrderItem>();
             try
             {
@@ -171,23 +129,36 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
                 {
                     while (null != (csvLine = reader.ReadLine()))
                     {
-                        OrderItem existingItem = (OrderItem)constructor.Invoke(new object[] { (string)csvLine });
-                        if (!(GetOrderItemProp(orderItem, "Id") == GetOrderItemProp(existingItem, "Id")))
-                            items.Add(existingItem);
-                        else
-                        //update amount in item csvLine[4] == amount
+                        OrderItem? orderItemFromFile = null;
+                        var csvLineArr = csvLine.Split(";");
+                        switch (csvLineArr[1])                      //string type: FoodItem, BeverageItem
                         {
-                            int amountExistingItem = GetOrderItemProp(existingItem, "Amount");
-                            int amountNewItem = GetOrderItemProp(orderItem, "Amount");
-                            string[] ctorCsvLineArgs = orderItem.ToString().Split(";");
-                            int newAmount = amountExistingItem + amountNewItem;
-                            
-                            ctorCsvLineArgs[4] += (amountExistingItem + amountNewItem);
-                            OrderItem updatedItem = (OrderItem)constructor.Invoke(new object[] { (string)ctorCsvLineArgs.ToString() });
-                            items.Add(orderItem);
+                            case "FoodItem":
+                                orderItemFromFile = new FoodItem(csvLine);
+                                break;
+                            case "BeverageItem":
+                                orderItemFromFile = new BeverageItem(csvLine);
+                                break;
+                        }
+                        if (orderItemFromFile == null) continue;
+
+                        if (orderItem.Id == orderItemFromFile.Id)   //update amount
+                        {
+                            if (orderItem.Amount > 0)
+                            {
+                                orderItemFromFile.Amount += orderItem.Amount;
+                                items.Add(orderItemFromFile);
+                            }
+                        }
+                        else
+                        {
+                            items.Add(orderItemFromFile);
                         }
                     }
+                    if (items.Find(x => x.Id == orderItem.Id) == null)
+                        items.Add(orderItem);
                 }
+
                 File.Create(fullPath).Close();
                 using (var writer = new StreamWriter(fullPath, append: true))
                 {
@@ -200,6 +171,19 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
             catch (Exception ex)
             {
                 Console.WriteLine("Failed to update entity.");
+                Console.WriteLine(ex.Message);
+            }
+        }
+        public void Delete(int orderId)    //deletes file
+        {
+            string fullPath = GetFilePathByOrderId(orderId);
+            try
+            {
+                File.Delete(fullPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to remove Order items.");
                 Console.WriteLine(ex.Message);
             }
         }
