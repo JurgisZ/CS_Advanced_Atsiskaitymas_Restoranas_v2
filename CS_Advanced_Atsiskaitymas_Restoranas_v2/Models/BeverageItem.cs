@@ -8,6 +8,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
 {
     internal class BeverageItem : OrderItem
     {
+        public bool IsAlcoholiBeverage { get; set; }
         public BeverageItem(string csvLine) : base(csvLine)
         {
         }

@@ -57,6 +57,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Repositories
             }
             catch (Exception ex) 
             {
+                //Console.WriteLine("Get all failed");
                 Console.WriteLine(ex.Message);
             }
             return entities == null ? default : entities;

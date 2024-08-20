@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,8 +12,8 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
         public string ItemType { get; set; }
         public string ItemName { get; set; }
         public decimal Price { get; set; }
-        public int Count { get; set; }
-        public OrderItem(string csvLine)
+        public int Amount { get; set; } //butu nice apsirasyt savo += operatoriu
+        public OrderItem(string csvLine)    //abstract
         {
             try
             {
@@ -21,7 +22,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
                 base.Id = Convert.ToInt32(csvValues[0]);
                 ItemType = csvValues[1];
                 ItemName = csvValues[2];
-                Price = Convert.ToDecimal(csvValues[3]);
+                Price = Convert.ToDecimal(csvValues[3],CultureInfo.InvariantCulture);
             }
             catch(Exception ex)
             {

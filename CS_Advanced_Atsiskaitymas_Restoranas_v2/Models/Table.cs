@@ -8,7 +8,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
 {
     internal class Table : EntityBase
     {
-        public int TableNumber { get; set; }
+        //public int TableNumber { get; set; } = base.Id
         public int Seats { get; set; }
         public int? OrderId { get; set; }
         public bool Disabled { get; set; }  //lets say table is physicaly removed due to maintenance or it's winter season and outside tables ar not available
@@ -19,10 +19,10 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
                 string[] csvValues = csvLine.Split(';');
 
                 base.Id = Convert.ToInt32(csvValues[0]);
-                TableNumber = Convert.ToInt32(csvValues[1]);
-                Seats = Convert.ToInt32(csvValues[2]);
-                OrderId = string.IsNullOrEmpty(csvValues[3]) ? null : Convert.ToInt32(csvValues[3]);
-                Disabled = Convert.ToBoolean(csvValues[4]);
+                //TableNumber = Convert.ToInt32(csvValues[1]);
+                Seats = Convert.ToInt32(csvValues[1]);
+                OrderId = string.IsNullOrEmpty(csvValues[2]) ? null : Convert.ToInt32(csvValues[2]);
+                Disabled = Convert.ToBoolean(csvValues[3]);
             }
             catch(Exception ex) 
             {
@@ -33,12 +33,12 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
 
         public override string ToString()
         {
-            return $"{base.Id};{TableNumber};{Seats};{OrderId};{Disabled}";
+            return $"{base.Id};{Seats};{OrderId};{Disabled}";
         }
 
         public override string ToMenuString()
         {
-            return $"{TableNumber}. Available seats: { Seats}";
+            return $"{base.Id}. Available seats: { Seats}";
         }
     }
 }

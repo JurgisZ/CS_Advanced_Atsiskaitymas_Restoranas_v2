@@ -18,7 +18,7 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
         public List<Table>? GetAvailableTables()
         {
             var tables = _repository.GetAll().Where(x => !x.Disabled).ToList();
-            tables = tables.OrderBy(x => x.TableNumber).ToList();
+            tables = tables.OrderBy(x => x.Id).ToList();
             return tables;
         }
         public Table? GetById(int id) 
@@ -28,6 +28,17 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Services
         public void Update(Table table) 
         { 
             _repository.Update(table);
+        }
+        //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        public void ClearAllTableOrders()
+        {
+            var tables = _repository.GetAll();
+            foreach (var table in tables)
+            {
+                table.OrderId = null;
+                _repository.Update(table);
+            }
+
         }
     }
 }

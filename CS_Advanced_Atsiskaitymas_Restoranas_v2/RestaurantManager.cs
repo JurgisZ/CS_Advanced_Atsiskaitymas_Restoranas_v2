@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 //using CS_Advanced_Atsiskaitymas_Restoranas_v2.Services.Interfaces;
 
 namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
@@ -44,25 +45,46 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2
                 switch (mainMenuSelection)
                 {
                     case 1: //list available tables, select
-                        int selectedTableId = _displayService.DisplayStartNewOrderGetTableId(_tableService.GetAvailableTables(), $"Hello {currentUser.Name}");
-                        if(_displayService.DisplayConfirmSelectedTable(_tableService.GetById(selectedTableId)))
+                        int selectedTableIdandNumber = _displayService.DisplayStartNewOrderGetTableId(_tableService.GetAvailableTables(), $"Hello {currentUser.Name}");
+                        if(_displayService.DisplayConfirmSelectedTable(_tableService.GetById(selectedTableIdandNumber)))
                         {
                             //Create new order
-                            int orderId = _orderService.Create(selectedTableId);
+                            int orderId = _orderService.Create(selectedTableIdandNumber, _tableService.GetById(selectedTableIdandNumber).Id);
 
                             //Assign order to table
-                            Table table = _tableService.GetById(selectedTableId);
+                            Table table = _tableService.GetById(selectedTableIdandNumber);
                             table.OrderId = orderId;
                             _tableService.Update(table);
                         }
                         break;
 
                     case 2:
-                        Console.WriteLine("Add to order:");
+                        //select active order to add to
+                        List<Order> activeOrders = _orderService.GetActiveOrders();
+                        string[] activeOrdersMenuStrings = _orderService.OrdersListToMenuStringArr(activeOrders);
+                        int selectedOrderIndex = _displayService.DisplaySelectOptionReturnIndex(activeOrdersMenuStrings);
+                        if (selectedOrderIndex == -1) break;
+                        int selectedOrderId = activeOrders[selectedOrderIndex].Id;
+                        
+                        
                         //Select category: FoodItem, BeverageItem
-                        //Display orders that belong to current user?
+                        string[] orderItemcategories = new string[] { "FoodItem", "BeverageItem" };
+                        int itemCategoryNumId = _displayService.DisplaySelectOptionReturnIndex(orderItemcategories);
+                        //allow 6 - exit at this point
+
+                        
+
+                        //display item selection
+                        List<OrderItem> itemsByCategory = _orderService.GetMenuItemsByCategory(orderItemcategories[itemCategoryNumId]);
+                            //if (itemsByCategory == default) - some message, break
+                        string[] orderItemsForSelection = _orderService.OrderItemsListToMenuStringArr(itemsByCategory);
+                        int selectedItemId = _displayService.DisplaySelectOptionReturnIndex(orderItemsForSelection);
+                        Console.WriteLine($"Selected item id: {selectedItemId}");
 
                         Console.ReadKey();
+                        break;
+                    case 4: //TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        _tableService.ClearAllTableOrders();
                         break;
                 }
 

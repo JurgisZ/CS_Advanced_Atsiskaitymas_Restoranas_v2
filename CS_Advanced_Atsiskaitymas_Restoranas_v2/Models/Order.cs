@@ -9,6 +9,9 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
 {
     internal class Order : EntityBase
     {
+        //public int OrderId { get; set; }
+        public int TableNumber {  get; set; }
+        public int TableSeatsNum {  get; set; }
         public bool IsCompleted { get; set; }
         public List<OrderItem> Items { get; private set; } = new List<OrderItem>();
         public DateTime OrderTime { get; set; }
@@ -19,17 +22,11 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
                 string[] csvValues = csvLine.Split(';');
 
                 base.Id = Convert.ToInt32(csvValues[0]);
-                IsCompleted = Convert.ToBoolean(csvValues[1]);
-                OrderTime = DateTime.Parse((csvValues[2]), CultureInfo.InvariantCulture);
-                if(csvValues.Length > 2) 
-                {
-                    //order items are split not by semicolon but by backslash symbol \
-                    for (int i = 2; i < csvValues.Count(); i++)
-                    {
-                        //Items.Add(new OrderItem(csvValues[i]));
-                        
-                    }
-                }
+                //OrderId = Convert.ToInt32(csvValues[1]);
+                TableNumber = Convert.ToInt32(csvValues[1]);
+                TableSeatsNum = Convert.ToInt32(csvValues[2]);
+                IsCompleted = Convert.ToBoolean(csvValues[3]);
+                OrderTime = DateTime.Parse((csvValues[4]), CultureInfo.InvariantCulture);
 
             }
             catch(Exception ex) 
@@ -41,12 +38,12 @@ namespace CS_Advanced_Atsiskaitymas_Restoranas_v2.Models
 
         public override string ToString()
         {
-            return $"{base.Id};{IsCompleted};{OrderTime.ToString(CultureInfo.InvariantCulture)}";
+            return $"{base.Id};{TableNumber};{TableSeatsNum};{IsCompleted};{OrderTime.ToString(CultureInfo.InvariantCulture)}";
         }
 
         public override string ToMenuString()
         {
-            throw new NotImplementedException();
+            return $"Table number: {TableNumber}, Seats: {TableSeatsNum}, ";
         }
     }
     
